@@ -3,6 +3,7 @@ import PetList from "./components/PetList";
 import PetDetail from "./components/PetDetail";
 import PetForm from "./components/PetForm";
 import * as petService from "./services/petService";
+import './App.css';
 
 const App = () => {
   const [petList, setPetList] = useState([]);
@@ -22,10 +23,16 @@ const App = () => {
     fetchPets();
   }, []);
 
-  // Toggle form visibility
-  const handleFormView = (pet) => {
-    if (!pet?.name) setSelected(null);
-    setIsFormOpen(!isFormOpen);
+  // Toggle form visibility and clear selected pet if creating new
+  const handleFormView = (pet = null) => {
+    setSelected(pet); // Set selected pet if editing, null if creating new
+    setIsFormOpen(!isFormOpen); // Toggle form state
+  };
+
+  // Update selected pet
+  const updateSelected = (pet) => {
+    setSelected(pet);
+    setIsFormOpen(false); // Close form if open
   };
 
   // Handle adding a new pet
@@ -62,28 +69,50 @@ const App = () => {
     }
   };
 
+  // Handle removing a pet
+  const handleRemovePet = async (petId) => {
+    try {
+      const deletedPet = await petService.deletePet(petId);
+      if (deletedPet.error) {
+        throw new Error(deletedPet.error);
+      }
+
+      setPetList(petList.filter((pet) => pet._id !== deletedPet._id)); // Remove the deleted pet
+      setSelected(null); // Clear selected pet
+      setIsFormOpen(false); // Close the form
+    } catch (error) {
+      console.log("Error deleting pet:", error);
+    }
+  };
+
   return (
-    <div>
-      <button onClick={() => handleFormView()}>
-        {isFormOpen ? "Close" : "Create a Pet"}
-      </button>
-
-      {isFormOpen ? (
-        <PetForm
-          handleAddPet={handleAddPet}
-          handleUpdatePet={handleUpdatePet}
-          selected={selected}
-        />
-      ) : (
-        <PetDetail selected={selected} handleFormView={handleFormView} />
-      )}
-
+    <div id="root-container">
       <PetList
         petList={petList}
-        updateSelected={setSelected}
-        handleFormView={handleFormView}
         isFormOpen={isFormOpen}
+        updateSelected={updateSelected} // Update selected pet
+        handleFormView={handleFormView} // Trigger form view
       />
+
+      <div id="main-content">
+        {isFormOpen ? (
+          <PetForm
+            selected={selected}
+            handleAddPet={handleAddPet}
+            handleUpdatePet={handleUpdatePet}
+          />
+        ) : selected ? (
+          <PetDetail
+            selected={selected}
+            handleFormView={handleFormView}
+            handleRemovePet={handleRemovePet}
+          />
+        ) : (
+          <div className="no-details">
+            <h1>NO DETAILS</h1>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,15 +1,19 @@
+
+
 const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}/pets`;
 
-export const index = async () => {
+// Fetch all pets
+const index = async () => {
   try {
     const res = await fetch(BASE_URL);
     return res.json();
   } catch (err) {
-    console.log('Error fetching pets:', err);
+    console.log(err);
   }
 };
 
-export const create = async (formData) => {
+// Create a new pet
+const create = async (formData) => {
   try {
     const res = await fetch(BASE_URL, {
       method: 'POST',
@@ -20,11 +24,12 @@ export const create = async (formData) => {
     });
     return res.json();
   } catch (err) {
-    console.log('Error creating pet:', err);
+    console.log(err);
   }
 };
 
-export const updatePet = async (formData, petId) => {
+// Update a pet
+const updatePet = async (formData, petId) => {
   try {
     const res = await fetch(`${BASE_URL}/${petId}`, {
       method: 'PUT',
@@ -35,6 +40,21 @@ export const updatePet = async (formData, petId) => {
     });
     return res.json();
   } catch (err) {
-    console.log('Error updating pet:', err);
+    console.log(err);
   }
 };
+
+// Delete a pet
+const deletePet = async (petId) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${petId}`, {
+      method: "DELETE",
+    });
+    return res.json();
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+
+export { index, create, updatePet, deletePet };
